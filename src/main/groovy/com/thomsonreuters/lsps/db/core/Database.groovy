@@ -14,21 +14,17 @@ class Database {
     DatabaseType databaseType = DatabaseType.Unknown
     String database
     String host
-    String controlSchema
+    String schema
+    String searchPath
     int port = -1
 
     Database(config) {
-        this.config = config.db
+        this.config = config
         parseJdbcConnectionString()
-        if (config.controlSchema) {
-            this.controlSchema = config.controlSchema
-        } else {
-            this.controlSchema = databaseType == DatabaseType.Postgres ? 'tm_dataloader' : 'TM_CZ'
-        }
     }
 
     Database withCredentials(String username, String password) {
-        new Database(db: config + [username: username, password: password])
+        new Database(config + [username: username, password: password])
     }
 
     void truncateTable(Sql sql, String tableName) {
@@ -51,14 +47,6 @@ class Database {
         } finally {
             if (sql != null) sql.close()
         }
-    }
-
-    private String getSearchPath() {
-        def schemas = 'tm_cz, tm_lz, tm_wz, i2b2demodata, i2b2metadata, deapp, fmapp, amapp, pg_temp'
-        if (controlSchema.toLowerCase() != 'tm_cz') {
-            schemas = "${controlSchema}, ${schemas}"
-        }
-        return schemas
     }
 
     Sql newSql() {
@@ -92,7 +80,7 @@ class Database {
                 it.println("set SEARCH_PATH = ${searchPath};")
                 it.append(content)
             } else if (databaseType == DatabaseType.Oracle) {
-                it.println("ALTER SESSION SET CURRENT_SCHEMA=${controlSchema};")
+                it.println("ALTER SESSION SET CURRENT_SCHEMA=${schema};")
                 it.println('/')
                 def parts = RE_ORACLE_SPLITTER.split(content)
                 for (def part : parts) {
