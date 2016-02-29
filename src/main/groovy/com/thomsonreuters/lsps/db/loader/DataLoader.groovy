@@ -4,6 +4,9 @@ import com.thomsonreuters.lsps.db.core.Database
 import com.thomsonreuters.lsps.db.core.DatabaseUtils
 import groovy.sql.Sql
 import org.postgresql.PGConnection
+
+import javax.sql.DataSource
+
 /**
  * Created by bondarev on 4/8/14.
  */
@@ -14,6 +17,18 @@ abstract class DataLoader {
     static long start(Database database, String tableName, Collection<String> columnNames, Closure block) {
         database.withSql { sql ->
             start(sql, tableName, columnNames, block)
+        }
+    }
+
+    static long start(DataSource dataSource, String tableName, Collection<String> columnNames, Closure block) {
+        Sql sql = new Sql(dataSource)
+        try {
+            start(sql, tableName, columnNames, block)
+        } finally {
+            try {
+                sql.close()
+            } catch (Exception ignored) {
+            }
         }
     }
 
