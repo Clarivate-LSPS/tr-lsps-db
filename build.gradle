@@ -1,3 +1,7 @@
+plugins {
+    id 'nebula.optional-base' version '3.0.3'
+}
+
 group 'com.thomsonreuters'
 version '1.0-SNAPSHOT'
 
@@ -5,6 +9,7 @@ apply plugin: 'groovy'
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'nebula.optional-base'
 
 sourceCompatibility = 1.7
 
@@ -20,6 +25,8 @@ dependencies {
     compile 'com.thomsonreuters:tr-lsps-io:1.0-SNAPSHOT'
     compile 'org.apache.commons:commons-csv:1.2'
     compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    compile 'org.postgresql:postgresql:9.4.1208.jre7', optional
+
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 

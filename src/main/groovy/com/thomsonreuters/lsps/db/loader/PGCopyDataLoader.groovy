@@ -1,12 +1,18 @@
 package com.thomsonreuters.lsps.db.loader
 
+import groovy.transform.CompileStatic
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
+import org.postgresql.PGConnection
+import org.postgresql.copy.PGCopyOutputStream
 
 /**
  * Created by bondarev on 4/21/14.
  */
-class CsvDataLoader extends DataLoader {
+@CompileStatic
+class PGCopyDataLoader extends DataLoader {
+    PGConnection connection
+
     private static class BatchWriter {
         private CSVPrinter printer
 
@@ -14,6 +20,7 @@ class CsvDataLoader extends DataLoader {
             printer = new CSVPrinter(out, CSVFormat.TDF.withRecordSeparator(System.getProperty("line.separator")))
         }
 
+        @SuppressWarnings("GroovyUnusedDeclaration")
         def addBatch(Object[] data) {
             addBatch(data as List)
         }
@@ -36,21 +43,18 @@ class CsvDataLoader extends DataLoader {
             command += "(${columnNames.join(', ')})"
         }
         command += " FROM STDIN WITH (FORMAT CSV, DELIMITER '\t')"
-        database.withSql { sql->
-            def PGCopyOutputStream = getClass().classLoader.loadClass('org.postgresql.copy.PGCopyOutputStream')
-            def out = PGCopyOutputStream.newInstance([sql.connection, command as String] as Object[])
-            def printer = new OutputStreamWriter(out)
+        def out = new PGCopyOutputStream(connection, command)
+        def printer = new OutputStreamWriter(out)
+        try {
+            block.call(new BatchWriter(printer))
+            printer.flush()
+        } catch (Throwable ex){
             try {
-                block.call(new BatchWriter(printer))
-                printer.flush()
-            } catch (Throwable ex){
-                try {
-                    out.cancelCopy()
-                } catch (Exception ignored) {
-                }
-                throw ex;
+                out.cancelCopy()
+            } catch (Exception ignored) {
             }
-            return out.endCopy()
+            throw ex;
         }
+        return out.endCopy()
     }
 }

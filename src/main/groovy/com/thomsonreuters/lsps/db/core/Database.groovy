@@ -2,6 +2,8 @@ package com.thomsonreuters.lsps.db.core
 
 import com.thomsonreuters.lsps.io.file.TempStorage
 import groovy.sql.Sql
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 import org.codehaus.groovy.control.io.NullWriter
 
 import java.util.regex.Pattern
@@ -39,7 +41,7 @@ class Database {
         sql.execute("truncate table $tableName" as String)
     }
 
-    def withSql(Closure block) {
+    public <T> T withSql(@ClosureParams(value = SimpleType, options = "groovy.sql.Sql") Closure<T> block) {
         Sql sql = null
         try {
             sql = newSql()

@@ -6,9 +6,9 @@ import groovy.sql.Sql
  * Created by bondarev on 4/21/14.
  */
 class SqlDataLoader extends DataLoader {
+    Sql sql
+
     long withBatch(Closure block) {
-        database.withSql { Sql sql ->
-            SqlMethods.insertRecords(sql, tableName, columnNames, block)
-        }
+        SqlMethods.insertRecords(sql, tableName, columnNames, block)
     }
 }
