@@ -26,7 +26,10 @@ class Database {
     }
 
     Database withCredentials(String username, String password) {
-        new Database(config + [username: username, password: password])
+        def database = new Database(config + [username: username, password: password])
+        database.schema = schema
+        database.searchPath = searchPath
+        database
     }
 
     void truncateTable(Sql sql, String tableName) {
@@ -82,8 +85,10 @@ class Database {
                 it.println("set SEARCH_PATH = ${searchPath};")
                 it.append(content)
             } else if (databaseType == DatabaseType.Oracle) {
-                it.println("ALTER SESSION SET CURRENT_SCHEMA=${schema};")
-                it.println('/')
+                if (schema) {
+                    it.println("ALTER SESSION SET CURRENT_SCHEMA=${schema};")
+                    it.println('/')
+                }
                 def parts = RE_ORACLE_SPLITTER.split(content)
                 for (def part : parts) {
                     it.println(content)
