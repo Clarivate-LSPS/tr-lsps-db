@@ -58,6 +58,8 @@ class Database {
         Sql sql = Sql.newInstance(config.jdbcConnectionString, config.username, config.password, config.jdbcDriver)
         if (databaseType == DatabaseType.Postgres) {
             sql.execute("SET SEARCH_PATH=${Sql.expand(searchPath)};")
+        } else if (databaseType == DatabaseType.Oracle){
+            sql.execute("ALTER SESSION SET DDL_LOCK_TIMEOUT=1000000")
         }
         return sql
     }
