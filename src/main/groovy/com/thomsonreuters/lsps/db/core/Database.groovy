@@ -60,6 +60,7 @@ class Database {
             sql.execute("SET SEARCH_PATH=${Sql.expand(searchPath)};")
         } else if (databaseType == DatabaseType.Oracle){
             sql.execute("ALTER SESSION SET DDL_LOCK_TIMEOUT=1000000")
+            sql.execute('ALTER SESSION SET "_optimizer_cartesian_enabled"=FALSE')
         }
         return sql
     }
